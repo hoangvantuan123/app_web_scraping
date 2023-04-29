@@ -40,6 +40,12 @@ def get_data(url, tags_attributes):
 
 # Hiển thị giao diện nhập URL, tên thẻ HTML và thuộc tính
 st.sidebar.title('Thu thập dữ liệu từ trang web')
+link = "https://www.example.com/"
+text = "Đường dẫn đến trang web"
+st.write("Lưu ý: Việc trích xuất dữ liệu từ các trang web có thể vi phạm các quy định bảo vệ dữ liệu hoặc các quy định của trang web đó. Do đó, trước khi sử dụng kĩ thuật screen scraping, cần phải đảm bảo rằng việc này không vi phạm pháp luật hoặc chính sách của trang web được truy xuất.")
+st.write("Thử: ")
+st.write("News (Hacker News) : " + "https://news.ycombinator.com/")
+st.write("Financial Data (Yahoo Finance) : " + "https://finance.yahoo.com/quote/TSLA/history?p=TSLA")
 url = st.sidebar.text_input('Nhập đường dẫn URL', key='url')
 
 # Tạo danh sách các thẻ HTML và thuộc tính tương ứng
@@ -77,7 +83,8 @@ if url and tags_attributes:
     if data:
         # Hiển thị dữ liệu bằng cách tạo bảng trong Streamlit
         st.title('Dữ liệu thu thập được')
-        df = pd.DataFrame(data, columns=[f'Item_{i}' for i in range(len(data[0]))])
+        df = pd.DataFrame(
+            data, columns=[f'Item_{i}' for i in range(len(data[0]))])
         st.write(df)
     else:
         st.warning('Không có dữ liệu để hiển thị')
