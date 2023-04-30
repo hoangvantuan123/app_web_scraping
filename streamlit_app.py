@@ -12,9 +12,10 @@ def get_data(url, tags_attributes):
         r = requests.get(url)
         if r.status_code == 200:
             soup = BeautifulSoup(r.content, 'html.parser')
-            st.code(soup)
+           # st.code(soup)
             data_list = []
             # tạo đối tượng data_dict với kiểu dữ liệu là OrderedDict
+            # OrderedDict() là một lớp từ điển trong python ghi nhớ thứ tự các mục được thêm
             data_dict = OrderedDict()
             for tag, attributes in tags_attributes.items():
                 for item in soup.find_all(tag, attributes):
@@ -40,13 +41,68 @@ def get_data(url, tags_attributes):
 
 # Hiển thị giao diện nhập URL, tên thẻ HTML và thuộc tính
 st.sidebar.title('Thu thập dữ liệu từ trang web')
-link = "https://www.example.com/"
-text = "Đường dẫn đến trang web"
-st.write("Lưu ý: Việc trích xuất dữ liệu từ các trang web có thể vi phạm các quy định bảo vệ dữ liệu hoặc các quy định của trang web đó. Do đó, trước khi sử dụng kĩ thuật screen scraping, cần phải đảm bảo rằng việc này không vi phạm pháp luật hoặc chính sách của trang web được truy xuất.")
-st.write("Thử: ")
-st.write("News (Hacker News) : " + "https://news.ycombinator.com/")
-st.write("Financial Data (Yahoo Finance) : " + "https://finance.yahoo.com/quote/TSLA/history?p=TSLA")
-url = st.sidebar.text_input('Nhập đường dẫn URL', key='url')
+
+# Tạo một khung
+st.markdown(
+    """
+    <div style='background-color:#F0F2F6; padding: 10px ; border-radius: 10px'>
+        <p >Lưu ý: Việc trích xuất dữ liệu từ các trang web có thể vi phạm các quy định bảo vệ dữ liệu hoặc các quy định của trang web đó. Do đó, trước khi sử dụng kĩ thuật screen scraping, cần phải đảm bảo rằng việc này không vi phạm pháp luật hoặc chính sách của trang web được truy xuất.</p>
+        <p>VD url: Newegg : https://www.newegg.com</p>
+    </div>
+    <br>
+    """,
+    unsafe_allow_html=True
+)
+
+# Tạo hộp mở rộng
+with st.expander("Xem đoạn mã code mẫu"):
+    code = ''' 
+    import bs4
+    from urllib.request import urlopen as uReq
+    from bs4 import BeautifulSoup as soup
+
+    # Đường dẫn của trang web bạn muốn lấy dữ liệu
+    my_url = 'https://www.example.com'
+
+    # Lấy HTML của trang web
+    uClient = uReq(my_url)
+    page_html = uClient.read()
+    uClient.close()
+
+    # Parse HTML bằng BeautifulSoup
+    page_soup = soup(page_html, 'html.parser')
+    page_soup__h1 = page_soup.h1
+    page_soup__p = page_soup.p
+    containers = page_soup.findAll("div", {"class": "item-container"})
+
+    product_length = len(containers)
+
+    # Lu file duoi dang csv
+    filename = "products.csv"
+    f = open(filename, "w")
+
+    headers = "Product_name,Price\n"
+
+    f.write(headers)
+
+    # print(product_length)
+    for container in containers:
+        title_a = container.find("a", {"class": "item-title"})
+        product_name = title_a.text if title_a else "Khong co ten san pham"
+        #print("Product: " + product_name)
+
+        price_current = container.find("li", {"class": "price-current"})
+        price = price_current.text
+        #print("Price: " + price)
+
+        f.write(f"{product_name},{price}\n")
+
+    f.close()
+    '''
+    st.code(code, language='python')
+
+url = st.sidebar.text_input(
+    'Nhập đường dẫn URL', value='https://www.example.com',  key='url')
 
 # Tạo danh sách các thẻ HTML và thuộc tính tương ứng
 tag_count = 0
@@ -72,17 +128,22 @@ while True:
                 attributes_dict[key] = value
     tags_attributes[tag] = attributes_dict
 
+
 # Kiểm tra dữ liệu nhập vào
 if url and tags_attributes:
+
     # Lấy dữ liệu từ trang web
     data = get_data(url, tags_attributes)
     st.code('url: ' + url)
-    st.code(tags_attributes)
-
+    # In ra giá trị của tags_attributes để kiểm tra
+    st.subheader("THUỘC TÍNH THẺ HTML (JSON)")
+    st.write(tags_attributes)
     # Kiểm tra dữ liệu trả về
+    st.subheader("DỮ LIỆU THU THẬP ĐƯỢC (JSON)")
+    st.write(data)
     if data:
         # Hiển thị dữ liệu bằng cách tạo bảng trong Streamlit
-        st.title('Dữ liệu thu thập được')
+        st.subheader('DỮ LIỆU THU THẬP ĐƯỢC (CSV)')
         df = pd.DataFrame(
             data, columns=[f'Item_{i}' for i in range(len(data[0]))])
         st.write(df)
